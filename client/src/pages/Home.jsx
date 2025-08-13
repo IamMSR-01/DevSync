@@ -1,13 +1,11 @@
-// src/pages/Home.jsx
-import React from "react";
 import { SignInButton, useUser } from "@clerk/clerk-react";
-import CodeEditor from "../components/CodeEditor.jsx";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
+import RoomPage from "./RoomPage.jsx";
 
 export default function Home() {
-  const { isLoggedIn } = useUser();
-  console.log("Logged in:", isLoggedIn);
+  const { isSignedIn } = useUser();
+  console.log("User signed in:", isSignedIn);
 
   // if (!isLoaded) {
   //   return (
@@ -19,9 +17,9 @@ export default function Home() {
 
   return (
     <div>
-      {isLoggedIn ? (
+      {isSignedIn ? (
         <div className="bg-gray-900">
-          <CodeEditor />
+          <RoomPage />
         </div>
       ) : (
         <div>

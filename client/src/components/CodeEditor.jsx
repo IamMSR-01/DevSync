@@ -12,7 +12,7 @@ function CodeEditor() {
   return (
     <div>
       <Editor
-        height="80vh" // Set the editor's height.
+        height="100vh" // Set the editor's height.
         theme="vs-dark" // This is the dark theme that matches VS Code.
         defaultLanguage="javascript" // Set the default language for syntax highlighting.
         defaultValue="// Start coding here... your journey to god-tier begins!" // Initial code.

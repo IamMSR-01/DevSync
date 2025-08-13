@@ -4,9 +4,6 @@ import { Link } from "react-router-dom";
 export default function Header() {
   const { isSignedIn } = useUser();
 
-  console.log("User signed in:", isSignedIn);
-//   const navigate = useNavigate();
-
   return (
     <header className="w-full bg-gray-900/80 backdrop-blur-md shadow-lg sticky top-0 z-50">
       <div className="max-w-8xl mx-auto px-10 py-4 flex items-center justify-between">
