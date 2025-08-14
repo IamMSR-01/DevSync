@@ -25,7 +25,7 @@ const TopMenuBar = () => {
     <div className="text-gray-300 w-full px-4 pt-3 flex text-sm justify-between items-center h-7">
       <div className="flex items-center justify-center">
         <img
-          src="https://images.pexels.com/photos/33217722/pexels-photo-33217722.jpeg"
+          src="Logo.png"
           alt="Logo"
           className="h-6 w-6 rounded-full"
         />
