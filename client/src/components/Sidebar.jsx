@@ -27,24 +27,30 @@ const Sidebar = ({ onFileSelect }) => {
     );
   };
 
-  const handleFileClick = async (fileHandle) => {
+  const handleFileClick = async (fileHandle, filePath) => {
     try {
       const file = await fileHandle.getFile();
       const text = await file.text();
-      onFileSelect(file.name, text);
+      onFileSelect( {
+        name: file.name,
+        path: filePath,
+        content: text
+      });
     } catch (err) {
       console.error("Error reading file:", err);
     }
   };
 
-  const readDirectory = async (dirHandle) => {
+  const readDirectory = async (dirHandle, parentPath = "") => {
     let entries = [];
     for await (const [name, handle] of dirHandle.entries()) {
+      const fullPath = `${parentPath}/${name}`;
       if (handle.kind === "directory") {
         entries.push({
           name,
           kind: "directory",
           handle,
+          path: fullPath,
           children: await readDirectory(handle),
           expanded: false,
         });
@@ -53,6 +59,7 @@ const Sidebar = ({ onFileSelect }) => {
           name,
           kind: "file",
           handle,
+          path: fullPath,
         });
       }
     }
@@ -95,12 +102,14 @@ const Sidebar = ({ onFileSelect }) => {
                             name: file.name,
                           },
                           name: file.name,
+                          path: file.webkitRelativePath,
                         }
                       : {
                           kind: "directory",
                           name: part,
                           children: {},
                           expanded: false,
+                          path: parts.slice(0, idx + 1).join("/"),
                         };
                 }
                 if (idx !== parts.length - 1) current = current[part].children;
@@ -150,7 +159,7 @@ const Sidebar = ({ onFileSelect }) => {
         ) : (
           <div
             className="flex items-center cursor-pointer hover:bg-gray-700 p-1 rounded pl-6"
-            onClick={() => handleFileClick(node.handle)}
+            onClick={() => handleFileClick(node.handle, node.path)}
           >
             {getFileIcon(node.name)}
             <span className="ml-2">{node.name}</span>

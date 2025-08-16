@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import axios from "axios";
 import TopMenuBar from "../components/TopMenuBar";
 import ActivityBar from "../components/ActivityBar";
 import Sidebar from "../components/Sidebar";
@@ -11,11 +12,10 @@ function RoomPage() {
   const [activeFile, setActiveFile] = useState(null);
   const [activeFileContent, setActiveFileContent] = useState("");
   const [sidebarVisible, setSidebarVisible] = useState(true);
-  const [panelVisible, setPanelVisible] = useState(true);
-  const [rightBarVisible, setRightBarVisible] = useState(true);
-  const [terminalVisible, setTerminalVisible] = useState(false);
 
   const editorRef = useRef(null);
+
+  console.log("Active file:", activeFile);
 
   // When folder is opened from the Sidebar component
   const handleFolderOpen = (name, fileList) => {
@@ -24,59 +24,55 @@ function RoomPage() {
   };
 
   // When user selects a file from Sidebar
-  const handleFileSelect = (fileName, fileContent) => {
-    setActiveFile(fileName);
-    setActiveFileContent(fileContent);
+  const handleFileSelect = (fileObj) => {
+    setActiveFile(fileObj); // ab isme {name, path, content} sab aayega
+    setActiveFileContent(fileObj.content);
   };
 
-  // When folder is opened from TopMenuBar dropdown
-  const handleOpenFolderFromRoom = async () => {
-    if ("showDirectoryPicker" in window) {
-      try {
-        const dirHandle = await window.showDirectoryPicker();
-        const fileList = [];
+  // --- File Save Functionality ---
 
-        for await (const [name, handle] of dirHandle.entries()) {
-          fileList.push({ name, handle });
-        }
+  const handleSave = async () => {
+    if (!activeFile) return alert("No file is open");
 
-        setFolderName(dirHandle.name);
-        setFiles(fileList);
-      } catch (err) {
-        console.error("Error opening folder:", err);
-      }
-    } else {
-      alert("Your browser does not support the File System Access API.");
+    try {
+      await axios.post("http://localhost:5000/api/files/save", {
+        filePath: activeFile.path,
+        content: activeFileContent,
+      });
+      alert("File saved successfully");
+    } catch (error) {
+      console.error("Error saving file:", error);
+      alert("Error saving file");
     }
   };
 
-  const runActiveFile = () => {
-    if (activeFile) {
-      console.log(`Running ${activeFile}...`);
-      // add actual run logic here
+  const handleSaveAs = async () => {
+    if (!activeFile) return alert("No file is open");
+    const newPath = prompt("Enter new file path:", activeFile.path);
+    console.log("File Path:", newPath);
+    if (!newPath) return;
+
+    try {
+      await axios.post("http://localhost:5000/api/files/save-as", {
+        filePath: newPath,
+        content: activeFileContent,
+      });
+      setActiveFile({ ...activeFile, path: newPath });
+      alert("File saved successfully");
+    } catch (error) {
+      console.error("Error saving file:", error);
+      alert("Error saving file");
     }
   };
 
   return (
     <div className="h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex flex-col">
       <TopMenuBar
-        onOpenFolder={handleFolderOpen}
-        onNewFile={() => {
-          /* new file flow */
-        }}
-        onSave={() => {
-          /* save active file */
-        }}
-        onSaveAs={() => {
-          /* save-as */
-        }}
+        onOpenFolder={() => console.log("Open Folder")}
+        onNewFile={() => console.log("New File")}
+        onSave={handleSave}
+        onSaveAs={handleSaveAs}
         onCloseEditor={() => setActiveFile(null)}
-        onToggleSidebar={() => setSidebarVisible((v) => !v)}
-        onTogglePanel={() => setPanelVisible((v) => !v)}
-        onToggleRightBar={() => setRightBarVisible((v) => !v)}
-        onRun={runActiveFile}
-        onToggleTerminal={() => setTerminalVisible((v) => !v)}
-        onFind={() => editorRef.current?.trigger("any", "actions.find")}
       />
 
       <div className="mt-4 flex border-t border-gray-700">
@@ -93,7 +89,7 @@ function RoomPage() {
           {activeFile ? (
             <CodeEditor
               ref={editorRef}
-              fileName={activeFile}
+              fileName={activeFile.name}
               content={activeFileContent}
               onChange={(newContent) => setActiveFileContent(newContent)}
               onClose={() => setActiveFile(null)}
